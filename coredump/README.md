@@ -1,6 +1,10 @@
 # CoreDump
 
-> Temporal semantic analysis engine — track how your codebase's meaning evolves across git history using vector embeddings.
+**Watch your codebase evolve. Commit by commit.**
+
+*A Temporal Semantic Analysis Engine powered by Endee Vector Database.*
+
+🌐 **Live Demo:** https://coredump.onrender.com
 
 ---
 
@@ -8,178 +12,178 @@
 
 Static code analyzers tell you what your code looks like **today**.
 
-But codebases are living things — they **drift**, **decay**, and **forget**.
+But codebases are living things. Over hundreds of commits, the original intent of a module slowly drifts. Functions die out and become "ghosts." Core architectures morph from focused logic into tangled god classes. Institutional knowledge disappears with a single `git push`.
 
-Functions that once existed vanish silently. Modules that were stable start shifting in meaning. Architecture that was once coherent begins to fracture across commits.
-
-**CoreDump** tracks the semantic evolution of your codebase across git history using vector embeddings stored in the [Endee](https://github.com/endee-io/endee) vector database.
+Traditional tools — linters, static analyzers, even code review — are blind to this kind of **temporal decay**. They see a snapshot. CoreDump sees the whole story.
 
 ---
 
-## What CoreDump Does
+## What is CoreDump?
 
-Six analyses no other tool does together:
+CoreDump is a temporal semantic analysis engine. Paste any public GitHub repository URL and CoreDump will:
 
-### 🌊 Drift Wave
-Track how each module's **semantic meaning** shifts over time.  
-Catch the **exact commit** where things started going wrong.
+1. Clone the repository and walk through the last N commits
+2. Extract every function and class definition across Python, JS, TS, Java, and Go
+3. Generate 384-dimensional semantic embeddings using CodeBERT
+4. Store everything in **Endee Vector Database**
+5. Analyze how the codebase's meaning has evolved over time
 
-### 👻 Ghost Concepts
-Find functions and classes that once existed — and **quietly disappeared**.  
-Institutional knowledge that died with a `git push`.
-
-### 🗺️ Architecture Map
-2D UMAP projection of your **entire codebase across time**.  
-Watch clusters form, split, and drift as your team evolves the system.
-
-### 📅 Activity Heatmap
-GitHub-style **commit activity visualization** showing development patterns,
-streaks, and busy periods across the analyzed history.
-
-### 🔥 Module Heatmap
-Rank every file by **semantic volatility**.  
-Know which parts of your codebase are stable vs chaotic.
-
-### 📋 Health Summary
-Rule-based **codebase health report** with a 0–100 score,
-verdicts (Healthy / Aging / Decaying), and auto-generated insights.
+The result is four interactive lenses on your codebase's evolution — drift, decay, architecture, and health.
 
 ---
 
-## Supported Languages
+## Four Lenses
 
-| Language | Parser |
-|---|---|
-| **Python** | Full AST parsing (functions, classes) |
-| **JavaScript** | Regex-based function extraction |
-| **TypeScript** | Regex-based function extraction |
-| **JSX / TSX** | Regex-based function extraction |
-| **Java** | Regex-based method extraction |
-| **Go** | Regex-based function extraction |
+### Drift Wave
+Track how each module's semantic meaning shifts commit by commit. Pinpoint the exact commit where things started going wrong. Drift score near 0 means stable. Near 1 means the module has fundamentally changed what it does.
+
+### Ghost Concepts
+Find functions and classes that once existed in your codebase but quietly disappeared across commits. These represent abandoned features, deleted experiments, and lost institutional knowledge — code that died with a git push.
+
+### Architecture Map
+A 2D UMAP projection of your entire codebase evolving over time. Watch semantic clusters form, split, and drift as your team evolves the system. Color-coded by commit recency — from oldest to newest.
+
+### Health Summary
+A plain English report on overall codebase health. Includes a stability score (0-100), verdict (Healthy / Aging / Decaying), and actionable insights about the most volatile and most stable modules.
 
 ---
 
 ## System Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                           CoreDump Pipeline                          │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│   GitHub URL                                                         │
-│       │                                                              │
-│       ▼                                                              │
-│   ┌──────────┐    ┌──────────────┐    ┌───────────────────┐         │
-│   │ GitPython │───▶│  AST/Regex   │───▶│  ONNX Embedder    │         │
-│   │  (clone)  │    │  Parser      │    │  (384-dim vectors)│         │
-│   └──────────┘    └──────────────┘    └─────────┬─────────┘         │
-│                                                  │                    │
-│                                                  ▼                    │
-│                                         ┌──────────────┐             │
-│                                         │  Endee Vector │             │
-│                                         │   Database    │             │
-│                                         │  (HNSW index) │             │
-│                                         └───────┬──────┘             │
-│                                                  │                    │
-│                                                  ▼                    │
-│                                         ┌──────────────┐             │
-│                                         │   Analyzer    │             │
-│                                         │ (6 analyses)  │             │
-│                                         └───────┬──────┘             │
-│                                                  │                    │
-│                                                  ▼                    │
-│                                         ┌──────────────┐             │
-│                                         │ Streamlit UI  │             │
-│                                         │  (6 viz tabs) │             │
-│                                         └──────────────┘             │
-└──────────────────────────────────────────────────────────────────────┘
+GitHub URL
+    ↓
+git_walker.py — Clone repo, walk N commits, extract code chunks
+    ↓
+Python AST + RegEx — Parse functions/classes per language
+    ↓
+embedder.py — Generate 384-dim embeddings via all-MiniLM-L6-v2
+    ↓
+endee_client.py — Store vectors + metadata in Endee Vector DB
+    ↓
+analyzer.py — Compute drift, ghost concepts, UMAP projection
+    ↓
+app.py — Streamlit dashboard with Plotly visualizations
 ```
 
 ---
 
-## How Endee Is Used
+## How Endee is Used
 
-CoreDump stores **one vector per code chunk per commit** in Endee.
+Endee is the core semantic engine of CoreDump. Without it, comparing the semantic shift of thousands of functions across dozens of commits would require an O(N²) matrix multiplication nightmare in memory.
 
-For a repository with 50 commits and 200 functions, that's up to **10,000 vectors** — each carrying:
-- A 384-dimensional semantic embedding capturing the chunk's meaning
-- Rich metadata: commit hash, date, author, file path, function/class name
+**Storage at Scale**
+CoreDump generates 10,000 to 20,000 vectors for a medium-sized repository history. Each vector is 384 dimensions with rich metadata — commit hash, author, date, file path, function name, line numbers. Endee stores and indexes all of this instantly via its REST API.
 
-Endee's high-performance **HNSW indexing** makes similarity search across all vectors instant.
+**HNSW Indexing**
+Endee uses HNSW graph indexing to place every historical function into organized semantic space. This makes similarity search across tens of thousands of historical vectors happen in milliseconds — no traditional database could do this.
+
+**Drift Calculation**
+CoreDump pulls embeddings from Endee and computes `1.0 - cosine_similarity()` between consecutive versions of the same function across commits. The larger the distance, the more that module has semantically drifted from its original purpose.
+
+**Ghost Detection**
+Ghost concepts are identified by finding vectors in Endee that stop appearing after a certain commit index. CoreDump queries the timeline of each chunk name and surfaces the ones that vanished — representing dead or deleted institutional knowledge.
 
 ---
 
-## Setup
+## Supported Languages
 
-### 1. Start Endee
-
-```bash
-docker run -p 8080:8080 -v endee-data:/data --name endee-server endeeio/endee-server:latest
-```
-
-### 2. Install Dependencies
-
-```bash
-cd coredump
-pip install -r requirements.txt
-```
-
-### 3. Run CoreDump
-
-```bash
-streamlit run app.py
-```
-
-The app opens at `http://localhost:8501`.
+| Language | Parser |
+|----------|--------|
+| Python | Python AST (built-in) |
+| JavaScript | RegEx function extractor |
+| TypeScript | RegEx function extractor |
+| Java | RegEx method extractor |
+| Go | RegEx function extractor |
 
 ---
 
 ## Tech Stack
 
 | Component | Technology |
-|---|---|
-| **Vector Database** | [Endee](https://github.com/endee-io/endee) |
-| **Embeddings** | all-MiniLM-L6-v2 (ONNX Runtime) |
-| **Dimensionality Reduction** | UMAP |
-| **UI** | Streamlit |
-| **Git Analysis** | GitPython |
-| **Visualizations** | Plotly |
-| **Language** | Python 3.11+ |
+|-----------|-----------|
+| Vector Database | Endee (endee-io/endee) |
+| Embeddings | all-MiniLM-L6-v2 via sentence-transformers |
+| Dimensionality Reduction | UMAP |
+| Git Analysis | GitPython |
+| Visualizations | Plotly |
+| UI Framework | Streamlit |
+| Language | Python 3.11+ |
 
 ---
 
-## File Structure
+## Setup & Running Locally
+
+### Prerequisites
+- Python 3.10+
+- Docker
+- Git
+
+### 1. Clone this repository
+```bash
+git clone https://github.com/Chaplot05/endee.git
+cd endee
+git checkout riddhi-ai-project
+cd coredump
+```
+
+### 2. Start Endee Vector Database
+```bash
+docker run -p 8080:8080 -v endee-data:/data --name endee-server endeeio/endee-server:latest
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run CoreDump
+```bash
+streamlit run app.py
+```
+
+### 5. Analyze a repository
+Open `http://localhost:8501`, paste any public GitHub URL, and click **Analyze Repository**.
+
+**Recommended repos to try:**
+- `https://github.com/psf/requests`
+- `https://github.com/pallets/flask`
+- `https://github.com/tiangolo/fastapi`
+
+---
+
+## Project Structure
 
 ```
 coredump/
-├── app.py                 # Main Streamlit application (6 tabs + FAQ)
-├── endee_client.py        # Endee REST API wrapper
-├── git_walker.py          # Clone repo + walk commits (multi-language)
-├── embedder.py            # ONNX Runtime embeddings (torch-free)
-├── analyzer.py            # 6 analysis functions
-├── requirements.txt       # All dependencies
-├── Procfile               # For Railway deployment
-├── .env.example           # Example env file
-└── README.md              # This file
+├── app.py              # Streamlit UI — dashboard and visualizations
+├── endee_client.py     # Endee REST API wrapper
+├── git_walker.py       # Git history walker and code parser
+├── embedder.py         # CodeBERT embedding engine
+├── embed_worker.py     # Subprocess worker for safe embedding
+├── analyzer.py         # Drift, ghost, UMAP, and health analysis
+├── requirements.txt    # Python dependencies
+├── Procfile            # Render deployment config
+└── README.md           # You are here
 ```
 
 ---
 
-## Demo Repos to Try
+## Mandatory Repository Steps Completed
 
-- **Flask** — https://github.com/pallets/flask
-- **Requests** — https://github.com/psf/requests
-- **FastAPI** — https://github.com/tiangolo/fastapi
-
----
-
-## License
-
-MIT
+- Starred the official Endee repository at github.com/endee-io/endee
+- Forked the repository to personal GitHub account (Chaplot05/endee)
+- Built the project inside the forked repository on branch `riddhi-ai-project`
 
 ---
 
-<div align="center">
-<strong>CoreDump</strong><br>
-<em>Built with Endee Vector Database · Powered by CodeBERT</em>
-</div>
+## Live Deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| CoreDump App | Render | https://coredump.onrender.com |
+| Endee Vector DB | Railway | https://endee-server-production-5a34.up.railway.app |
+
+---
+
+*Built with Endee Vector Database · Powered by sentence-transformers · CoreDump*
