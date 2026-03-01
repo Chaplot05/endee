@@ -551,7 +551,7 @@ if analyze_clicked:
     try:
         def git_progress(msg):
             status_text.markdown(f"**Step 2/5** — {msg}")
-        chunks = walk_commits(repo_url.strip(), max_commits=50, progress_callback=git_progress)
+        chunks = walk_commits(repo_url.strip(), max_commits=30, progress_callback=git_progress)
         progress_bar.progress(30)
     except Exception as e:
         st.error(f"Failed to clone repository: {str(e)}\n\nMake sure the URL is correct and the repo is public.")

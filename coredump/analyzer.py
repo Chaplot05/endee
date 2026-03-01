@@ -3,7 +3,7 @@ CoreDump Analysis Engine
 Six temporal semantic analysis functions:
 1. Semantic Drift Over Time — per-file embedding drift across commits
 2. Ghost Concepts — functions/classes that disappeared from the codebase
-3. Architecture Evolution — 2D UMAP projection of the entire codebase over time
+3. Architecture Evolution — 2D PCA projection of the entire codebase over time
 4. Commit Activity Heatmap — GitHub-style contribution grid
 5. Module Heatmap — files ranked by semantic volatility
 6. Health Summary — rule-based codebase health report
@@ -11,9 +11,9 @@ Six temporal semantic analysis functions:
 
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.decomposition import PCA
 from collections import defaultdict
 from datetime import datetime, timedelta
-import umap
 
 
 def compute_drift(embeddings: list) -> list:
@@ -120,21 +120,18 @@ def find_ghost_concepts(chunks: list) -> list:
 
 
 def architecture_evolution(chunks: list, embeddings: list) -> list:
-    """Project all code chunk embeddings into 2D space using UMAP."""
+    """Project all code chunk embeddings into 2D space using PCA."""
     if len(embeddings) < 5:
         return []
-    emb_array = np.array(embeddings)
-    n_neighbors = min(15, len(embeddings) - 1)
-    reducer = umap.UMAP(
-        n_components=2, n_neighbors=n_neighbors,
-        min_dist=0.1, metric='cosine', random_state=42
-    )
+    emb_array = np.array(embeddings, dtype=np.float32)
+    n_components = min(2, emb_array.shape[0], emb_array.shape[1])
+    reducer = PCA(n_components=n_components, random_state=42)
     coords = reducer.fit_transform(emb_array)
     result = []
     for i, (chunk, coord) in enumerate(zip(chunks, coords)):
         result.append({
             'x': float(coord[0]),
-            'y': float(coord[1]),
+            'y': float(coord[1]) if n_components == 2 else 0.0,
             'commit_date': chunk['commit_date'],
             'commit_index': chunk['commit_index'],
             'commit_hash': chunk['commit_hash'],
