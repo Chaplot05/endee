@@ -38,12 +38,34 @@ st.set_page_config(
 # ─────────────────────────────────────────────────────────────
 CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(198,255,51,0.15); }
+    50% { box-shadow: 0 0 20px rgba(198,255,51,0.35); }
+}
+
+@keyframes borderGlow {
+    0%, 100% { border-color: rgba(198,255,51,0.25); }
+    50% { border-color: rgba(198,255,51,0.6); }
+}
+
+@keyframes scanline {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
+@keyframes textFlicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.7; }
+    94% { opacity: 1; }
+}
 
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif !important;
-    background-color: #F5EDE8 !important;
-    color: #493129 !important;
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
 }
 
 #MainMenu {visibility: hidden;}
@@ -60,110 +82,145 @@ header {visibility: hidden;}
 
 /* Cards */
 .card {
-    background: #FFFFFF;
-    border: 1px solid #D4B8B0;
+    background: rgba(10,10,10,0.85);
+    border: 1px solid rgba(198,255,51,0.15);
     border-radius: 16px;
     padding: 28px;
     margin-bottom: 20px;
+    backdrop-filter: blur(12px);
 }
 
 .input-section {
-    background: #FFFFFF;
-    border: 1px solid #D4B8B0;
+    background: rgba(10,10,10,0.85);
+    border: 1px solid rgba(198,255,51,0.2);
     border-radius: 20px;
     padding: 32px;
     margin-bottom: 32px;
+    backdrop-filter: blur(12px);
 }
 
 .input-label {
     font-size: 11px;
-    font-weight: 600;
-    color: #8B597B;
-    letter-spacing: 1px;
+    font-weight: 700;
+    color: #C6FF33;
+    letter-spacing: 2px;
     text-transform: uppercase;
     margin-bottom: 8px;
+    font-family: 'Orbitron', sans-serif;
 }
 
 /* Feature cards */
 .feature-card {
-    background: #FFFFFF;
-    border: 1px solid #D4B8B0;
+    background: rgba(10,10,10,0.8);
+    border: 1px solid rgba(198,255,51,0.12);
     border-radius: 16px;
     padding: 28px;
     height: 100%;
     min-height: 180px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C6FF33, transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover {
+    border-color: rgba(198,255,51,0.4);
+    box-shadow: 0 0 30px rgba(198,255,51,0.08);
+}
+
+.feature-card:hover::before { opacity: 1; }
 
 .feature-num {
     font-size: 11px;
     font-weight: 700;
-    color: #EFA3A0;
-    letter-spacing: 1px;
+    color: #C50022;
+    letter-spacing: 2px;
     margin-bottom: 12px;
+    font-family: 'Orbitron', sans-serif;
 }
 
 .feature-title {
     font-size: 18px;
     font-weight: 700;
-    color: #493129;
+    color: #FFFFFF;
     margin-bottom: 8px;
+    font-family: 'Orbitron', sans-serif;
 }
 
 .feature-desc {
     font-size: 14px;
-    color: #8B597B;
+    color: rgba(255,255,255,0.55);
     line-height: 1.6;
 }
 
 /* Stat cards */
 .stat-card {
-    background: #FFFFFF;
-    border: 1px solid #D4B8B0;
+    background: rgba(10,10,10,0.85);
+    border: 1px solid rgba(198,255,51,0.12);
     border-radius: 14px;
     padding: 20px 24px;
     text-align: center;
+    backdrop-filter: blur(10px);
+    animation: glowPulse 4s ease-in-out infinite;
 }
 
 .stat-number {
     font-size: 32px;
     font-weight: 700;
-    color: #493129;
-    font-family: 'JetBrains Mono', monospace;
+    color: #C6FF33;
+    font-family: 'Orbitron', sans-serif;
 }
 
 .stat-label {
     font-size: 13px;
-    color: #8B597B;
+    color: rgba(255,255,255,0.6);
     margin-top: 4px;
     font-weight: 500;
 }
 
 .stat-sub {
     font-size: 11px;
-    color: #B09090;
+    color: rgba(255,255,255,0.35);
     margin-top: 2px;
 }
 
 /* Ghost cards */
 .ghost-card {
-    background: #FFFFFF;
-    border: 1px solid #D4B8B0;
-    border-left: 4px solid #EFA3A0;
+    background: rgba(10,10,10,0.85);
+    border: 1px solid rgba(197,0,34,0.2);
+    border-left: 4px solid #C50022;
     border-radius: 0 14px 14px 0;
     padding: 18px 20px;
     margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.ghost-card:hover {
+    border-color: rgba(197,0,34,0.5);
+    box-shadow: 0 0 20px rgba(197,0,34,0.1);
 }
 
 .ghost-card .chunk-name {
     font-family: 'JetBrains Mono', monospace;
     font-size: 15px;
     font-weight: 600;
-    color: #493129;
+    color: #FFFFFF;
     margin-bottom: 6px;
 }
 
 .ghost-card .file-path {
-    color: #8B597B;
+    color: rgba(255,255,255,0.5);
     font-size: 13px;
     margin-bottom: 4px;
     white-space: nowrap;
@@ -172,65 +229,78 @@ header {visibility: hidden;}
 }
 
 .ghost-card .last-seen {
-    color: #B09090;
+    color: rgba(255,255,255,0.35);
     font-size: 12px;
 }
 
 /* Badges */
-.badge-high   { background: #FFE8E8; color: #C0504D; padding: 2px 10px; border-radius: 20px; font-size: 12px; display: inline-block; }
-.badge-medium { background: #FFF3E0; color: #B07030; padding: 2px 10px; border-radius: 20px; font-size: 12px; display: inline-block; }
-.badge-low    { background: #E8F5E8; color: #4A7A4A; padding: 2px 10px; border-radius: 20px; font-size: 12px; display: inline-block; }
-.badge-type   { background: #F8DEC7; color: #493129; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; display: inline-block; }
+.badge-high   { background: rgba(197,0,34,0.2); color: #FF4466; padding: 2px 10px; border-radius: 20px; font-size: 12px; display: inline-block; border: 1px solid rgba(197,0,34,0.3); }
+.badge-medium { background: rgba(198,255,51,0.1); color: #C6FF33; padding: 2px 10px; border-radius: 20px; font-size: 12px; display: inline-block; border: 1px solid rgba(198,255,51,0.2); }
+.badge-low    { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); padding: 2px 10px; border-radius: 20px; font-size: 12px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
+.badge-type   { background: rgba(198,255,51,0.1); color: #C6FF33; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; display: inline-block; border: 1px solid rgba(198,255,51,0.2); }
 
 /* Status */
-.status-connected { background: #E8F5E8; color: #4A7A4A; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-.status-offline   { background: #FFE8E8; color: #C0504D; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.status-connected { background: rgba(198,255,51,0.1); color: #C6FF33; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(198,255,51,0.3); font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
+.status-offline   { background: rgba(197,0,34,0.15); color: #FF4466; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(197,0,34,0.3); font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
 
 /* FAQ cards */
 .faq-card {
-    background: #FFFFFF;
-    border-left: 3px solid #8B597B;
+    background: rgba(10,10,10,0.85);
+    border-left: 3px solid #C6FF33;
     border-radius: 0 12px 12px 0;
     padding: 16px 20px;
     margin-bottom: 10px;
 }
 
-.faq-q { font-weight: 600; color: #493129; font-size: 15px; margin-bottom: 6px; }
-.faq-a { color: #8B597B; font-size: 14px; line-height: 1.6; }
+.faq-q { font-weight: 600; color: #FFFFFF; font-size: 15px; margin-bottom: 6px; }
+.faq-a { color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.6; }
 
 /* Streamlit overrides */
 .stTextInput input {
-    background: #F5EDE8 !important;
-    border: 1px solid #D4B8B0 !important;
+    background: rgba(10,10,10,0.9) !important;
+    border: 1px solid rgba(198,255,51,0.2) !important;
     border-radius: 10px !important;
-    color: #493129 !important;
+    color: #FFFFFF !important;
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 14px !important;
+    transition: border-color 0.3s ease !important;
 }
 
-.stTextInput input::placeholder { color: #B09090 !important; }
+.stTextInput input:focus {
+    border-color: #C6FF33 !important;
+    box-shadow: 0 0 15px rgba(198,255,51,0.15) !important;
+}
+
+.stTextInput input::placeholder { color: rgba(255,255,255,0.3) !important; }
 
 .stButton > button {
-    background: #493129 !important;
-    color: #F5EDE8 !important;
+    background: linear-gradient(135deg, #C6FF33, #9ECC29) !important;
+    color: #000000 !important;
     border: none !important;
     border-radius: 10px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     font-size: 15px !important;
     padding: 14px 28px !important;
     width: 100% !important;
-    letter-spacing: 0.3px !important;
-    transition: background 0.2s !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    font-family: 'Orbitron', sans-serif !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 0 20px rgba(198,255,51,0.2) !important;
 }
 
-.stButton > button:hover { background: #6B4035 !important; }
+.stButton > button:hover {
+    background: linear-gradient(135deg, #D4FF55, #C6FF33) !important;
+    box-shadow: 0 0 35px rgba(198,255,51,0.4) !important;
+    transform: translateY(-1px) !important;
+}
 
 .stTabs [data-baseweb="tab-list"] {
-    background-color: #EDE0D9 !important;
+    background-color: rgba(10,10,10,0.9) !important;
     border-radius: 14px !important;
     padding: 5px !important;
     gap: 4px !important;
-    border: 1px solid #D4B8B0 !important;
+    border: 1px solid rgba(198,255,51,0.12) !important;
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -239,7 +309,7 @@ header {visibility: hidden;}
 
 .stTabs button[data-baseweb="tab"], .stTabs div[data-baseweb="tab"] {
     background-color: transparent !important;
-    color: #8B597B !important;
+    color: rgba(255,255,255,0.5) !important;
     border-radius: 10px !important;
     font-size: 13px !important;
     font-weight: 500 !important;
@@ -251,18 +321,20 @@ header {visibility: hidden;}
     min-width: 80px !important;
     text-align: center !important;
     cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
 .stTabs button[data-baseweb="tab"][aria-selected="true"], .stTabs div[data-baseweb="tab"][aria-selected="true"] {
-    background-color: #FFFFFF !important;
-    color: #493129 !important;
+    background-color: rgba(198,255,51,0.1) !important;
+    color: #C6FF33 !important;
     font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(73,49,41,0.1) !important;
+    box-shadow: 0 0 12px rgba(198,255,51,0.1) !important;
+    border: 1px solid rgba(198,255,51,0.25) !important;
 }
 
 .stTabs button[data-baseweb="tab"]:hover, .stTabs div[data-baseweb="tab"]:hover {
-    background-color: rgba(255,255,255,0.6) !important;
-    color: #493129 !important;
+    background-color: rgba(198,255,51,0.05) !important;
+    color: #FFFFFF !important;
 }
 
 .stTabs [data-baseweb="tab-highlight"] {
@@ -273,25 +345,30 @@ header {visibility: hidden;}
     display: none !important;
 }
 
-.stProgress > div > div { background: #493129 !important; }
-.stSlider [data-baseweb="slider"] { color: #493129 !important; }
+.stProgress > div > div { background: linear-gradient(90deg, #C6FF33, #C50022) !important; }
+.stSlider [data-baseweb="slider"] { color: #C6FF33 !important; }
 
 .streamlit-expanderHeader {
-    background: #FFFFFF !important;
-    border: 1px solid #D4B8B0 !important;
+    background: rgba(10,10,10,0.9) !important;
+    border: 1px solid rgba(198,255,51,0.12) !important;
     border-radius: 10px !important;
-    color: #493129 !important;
+    color: #FFFFFF !important;
     font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.streamlit-expanderHeader:hover {
+    border-color: rgba(198,255,51,0.3) !important;
 }
 
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #8B597B;
+    color: rgba(255,255,255,0.4);
     font-size: 16px;
 }
 
-.empty-state .empty-icon { font-size: 36px; margin-bottom: 16px; opacity: 0.4; }
+.empty-state .empty-icon { font-size: 36px; margin-bottom: 16px; opacity: 0.3; }
 
 /* Health circle */
 .health-circle {
@@ -303,12 +380,13 @@ header {visibility: hidden;}
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px auto;
-    background: #FFFFFF;
+    background: rgba(10,10,10,0.9);
     border: 3px solid;
+    animation: glowPulse 3s ease-in-out infinite;
 }
 
 .health-circle .score {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Orbitron', sans-serif;
     font-size: 42px;
     font-weight: 700;
     line-height: 1;
@@ -318,30 +396,39 @@ header {visibility: hidden;}
     font-size: 13px;
     font-weight: 500;
     margin-top: 4px;
+    font-family: 'Orbitron', sans-serif;
 }
 
 /* Section label */
 .section-label {
     font-size: 11px;
-    font-weight: 600;
-    color: #8B597B;
-    letter-spacing: 2px;
+    font-weight: 700;
+    color: #C6FF33;
+    letter-spacing: 3px;
     text-transform: uppercase;
     margin-bottom: 12px;
+    font-family: 'Orbitron', sans-serif;
 }
 
 .section-heading {
     font-size: 20px;
     font-weight: 700;
-    color: #493129;
+    color: #FFFFFF;
     margin-bottom: 4px;
+    font-family: 'Orbitron', sans-serif;
 }
 
 .section-desc {
     font-size: 14px;
-    color: #8B597B;
+    color: rgba(255,255,255,0.5);
     margin-bottom: 20px;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #000000; }
+::-webkit-scrollbar-thumb { background: rgba(198,255,51,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(198,255,51,0.5); }
 </style>
 """
 
@@ -351,31 +438,31 @@ st.markdown(CSS, unsafe_allow_html=True)
 # Color Palette
 # ─────────────────────────────────────────────────────────────
 COLORS = {
-    'bg': '#F5EDE8',
-    'bg_section': '#EDE0D9',
-    'card': '#FFFFFF',
-    'border': '#D4B8B0',
-    'primary': '#493129',
-    'secondary': '#8B597B',
-    'accent': '#EFA3A0',
-    'accent_dark': '#D4827E',
-    'peach': '#F8DEC7',
-    'text': '#493129',
-    'text_muted': '#8B597B',
-    'text_light': '#B09090',
-    'chart_bg': '#FFFFFF',
-    'grid': '#F0E4DF',
-    'success': '#5C7A5C',
+    'bg': '#000000',
+    'bg_section': '#0A0A0A',
+    'card': 'rgba(10,10,10,0.85)',
+    'border': 'rgba(198,255,51,0.15)',
+    'primary': '#C6FF33',
+    'secondary': '#C50022',
+    'accent': '#C6FF33',
+    'accent_dark': '#9ECC29',
+    'peach': 'rgba(198,255,51,0.1)',
+    'text': '#FFFFFF',
+    'text_muted': 'rgba(255,255,255,0.5)',
+    'text_light': 'rgba(255,255,255,0.35)',
+    'chart_bg': '#0A0A0A',
+    'grid': 'rgba(198,255,51,0.06)',
+    'success': '#C6FF33',
 }
 
-CHART_COLORS = ['#493129', '#8B597B', '#EFA3A0', '#D4827E', '#F8DEC7']
-DRIFT_LINE_COLORS = ['#493129', '#8B597B', '#EFA3A0', '#D4827E', '#8B5E7B']
+CHART_COLORS = ['#C6FF33', '#C50022', '#FFFFFF', '#FF4466', '#9ECC29']
+DRIFT_LINE_COLORS = ['#C6FF33', '#C50022', '#FFFFFF', '#FF4466', '#9ECC29']
 
 QUARTILE_COLORS = {
-    'Q1': '#F8DEC7',
-    'Q2': '#EFA3A0',
-    'Q3': '#8B597B',
-    'Q4': '#493129',
+    'Q1': 'rgba(255,255,255,0.2)',
+    'Q2': 'rgba(198,255,51,0.4)',
+    'Q3': '#C6FF33',
+    'Q4': '#C50022',
 }
 
 
@@ -414,7 +501,7 @@ def format_date(date_str: str) -> str:
 
 
 def chart_layout(fig, height=420, showlegend=True):
-    """Apply warm light theme to Plotly figures."""
+    """Apply futuristic dark theme to Plotly figures."""
     fig.update_layout(
         paper_bgcolor=COLORS['chart_bg'],
         plot_bgcolor=COLORS['chart_bg'],
@@ -445,21 +532,22 @@ st.markdown("""
     left: 0;
     right: 0;
     height: 56px;
-    background: #F5EDE8;
-    border-bottom: 1px solid #D4B8B0;
+    background: rgba(0,0,0,0.92);
+    border-bottom: 1px solid rgba(198,255,51,0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 40px;
     z-index: 999;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Orbitron', sans-serif;
+    backdrop-filter: blur(20px);
 ">
-    <span style="font-weight: 700; font-size: 16px; color: #493129; letter-spacing: -0.3px;">CoreDump</span>
+    <span style="font-weight: 700; font-size: 16px; color: #C6FF33; letter-spacing: 2px; text-transform: uppercase;">CoreDump</span>
     <div style="display: flex; gap: 28px; align-items: center;">
-        <a href="#analyze" style="color: #8B597B; text-decoration: none; font-size: 14px; font-weight: 500;">Analyze</a>
-        <a href="#how-it-works" style="color: #8B597B; text-decoration: none; font-size: 14px; font-weight: 500;">How it works</a>
-        <a href="#faq" style="color: #8B597B; text-decoration: none; font-size: 14px; font-weight: 500;">FAQ</a>
-        <span style="background: #493129; color: #F5EDE8; padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;">Open Source</span>
+        <a href="#analyze" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 1px; transition: color 0.3s;">Analyze</a>
+        <a href="#how-it-works" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 1px;">How it works</a>
+        <a href="#faq" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 1px;">FAQ</a>
+        <span style="background: rgba(198,255,51,0.1); color: #C6FF33; padding: 6px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid rgba(198,255,51,0.25); letter-spacing: 1px;">Open Source</span>
     </div>
 </nav>
 <div style="height: 56px;"></div>
@@ -473,22 +561,22 @@ hero_left, hero_right = st.columns([5, 1])
 
 with hero_left:
     st.markdown("""
-    <div style="padding: 60px 0 48px 0; border-bottom: 1px solid #D4B8B0;">
-        <div style="font-size: 11px; font-weight: 600; color: #8B597B; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px;">
-            Powered by Endee Vector Database
+    <div style="padding: 60px 0 48px 0; border-bottom: 1px solid rgba(198,255,51,0.08);">
+        <div style="font-size: 11px; font-weight: 700; color: #C6FF33; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; font-family: 'Orbitron', sans-serif;">
+            ⚡ Powered by Endee Vector Database
         </div>
-        <h1 style="font-size: 64px; font-weight: 800; color: #493129; letter-spacing: -2px; line-height: 1.05; margin: 0 0 20px 0;">
-            Watch your codebase<br>evolve.
+        <h1 style="font-size: 64px; font-weight: 900; color: #FFFFFF; letter-spacing: -2px; line-height: 1.05; margin: 0 0 20px 0; font-family: 'Orbitron', sans-serif;">
+            Watch your codebase<br><span style='color: #C6FF33;'>evolve.</span>
         </h1>
-        <p style="font-size: 20px; color: #8B597B; max-width: 560px; line-height: 1.6; margin: 0 0 28px 0; font-weight: 400;">
+        <p style="font-size: 20px; color: rgba(255,255,255,0.55); max-width: 560px; line-height: 1.6; margin: 0 0 28px 0; font-weight: 400;">
             Paste any public GitHub repo URL. CoreDump analyzes semantic drift,
             ghost concepts, and architectural evolution across every commit.
         </p>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <span style="background: #F8DEC7; color: #493129; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">Semantic Analysis</span>
-            <span style="background: #F8DEC7; color: #493129; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">Vector Embeddings</span>
-            <span style="background: #F8DEC7; color: #493129; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">Git History</span>
-            <span style="background: #F8DEC7; color: #493129; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">Python · JS · TS · Java · Go</span>
+            <span style="background: rgba(198,255,51,0.08); color: #C6FF33; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(198,255,51,0.2); letter-spacing: 0.5px;">Semantic Analysis</span>
+            <span style="background: rgba(198,255,51,0.08); color: #C6FF33; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(198,255,51,0.2); letter-spacing: 0.5px;">Vector Embeddings</span>
+            <span style="background: rgba(198,255,51,0.08); color: #C6FF33; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(198,255,51,0.2); letter-spacing: 0.5px;">Git History</span>
+            <span style="background: rgba(197,0,34,0.1); color: #FF4466; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(197,0,34,0.2); letter-spacing: 0.5px;">Python · JS · TS · Java · Go</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -660,9 +748,9 @@ if st.session_state.get('analysis_complete', False):
     summary_data = st.session_state.get('summary_data')
 
     st.markdown("""
-    <div style="padding: 48px 0 24px 0; border-top: 1px solid #D4B8B0;">
+    <div style="padding: 48px 0 24px 0; border-top: 1px solid rgba(198,255,51,0.08);">
         <div class="section-label">Analysis Results</div>
-        <h2 style="font-size: 32px; font-weight: 700; color: #493129; margin: 0 0 32px 0;">Your codebase, dissected.</h2>
+        <h2 style="font-size: 32px; font-weight: 700; color: #FFFFFF; margin: 0 0 32px 0; font-family: 'Orbitron', sans-serif;">Your codebase, <span style='color:#C6FF33;'>dissected.</span></h2>
     </div>
     """, unsafe_allow_html=True)
 
@@ -730,18 +818,18 @@ if st.session_state.get('analysis_complete', False):
             if all_drift_rows:
                 df_drift = pd.DataFrame(all_drift_rows).sort_values('Drift Score', ascending=False).head(10).reset_index(drop=True)
                 tbl = '<div class="card" style="overflow-x:auto; padding:0;"><table style="width:100%;border-collapse:collapse;font-size:13px;">'
-                tbl += '<tr style="border-bottom:1px solid #D4B8B0;">'
+                tbl += '<tr style="border-bottom:1px solid rgba(198,255,51,0.1);">'
                 for col in ['Commit', 'Message', 'Date', 'Drift Score', 'Module']:
-                    tbl += f'<th style="padding:14px 12px;text-align:left;color:#8B597B;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">{col}</th>'
+                    tbl += f'<th style="padding:14px 12px;text-align:left;color:#C6FF33;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Orbitron,sans-serif;">{col}</th>'
                 tbl += '</tr>'
                 for _, row in df_drift.iterrows():
-                    tbl += '<tr style="border-bottom:1px solid #F0E4DF;">'
-                    tbl += f'<td style="padding:12px;font-family:JetBrains Mono,monospace;font-size:12px;color:#493129;">{row["Commit"]}</td>'
-                    tbl += f'<td style="padding:12px;color:#493129;">{row["Message"]}</td>'
-                    tbl += f'<td style="padding:12px;color:#8B597B;">{row["Date"]}</td>'
+                    tbl += '<tr style="border-bottom:1px solid rgba(198,255,51,0.05);">'
+                    tbl += f'<td style="padding:12px;font-family:JetBrains Mono,monospace;font-size:12px;color:#FFFFFF;">{row["Commit"]}</td>'
+                    tbl += f'<td style="padding:12px;color:rgba(255,255,255,0.7);">{row["Message"]}</td>'
+                    tbl += f'<td style="padding:12px;color:rgba(255,255,255,0.5);">{row["Date"]}</td>'
                     tbl += f'<td style="padding:12px;">{drift_badge(row["Drift Score"])}</td>'
                     mod = row["Module"] if len(row["Module"]) < 35 else "..." + row["Module"][-32:]
-                    tbl += f'<td style="padding:12px;color:#8B597B;font-size:12px;">{mod}</td>'
+                    tbl += f'<td style="padding:12px;color:rgba(255,255,255,0.5);font-size:12px;">{mod}</td>'
                     tbl += '</tr>'
                 tbl += '</table></div>'
                 st.markdown(tbl, unsafe_allow_html=True)
@@ -764,7 +852,7 @@ if st.session_state.get('analysis_complete', False):
                         <div class="chunk-name">{ghost['chunk_name']}</div>
                         <span class="badge-type">{ghost['chunk_type']}</span>
                         <div class="file-path">{file_display}</div>
-                        <div class="last-seen">Last seen: {last_seen_fmt} · commit <code style="color:#8B597B;font-family:JetBrains Mono,monospace;font-size:11px;">{ghost['last_seen_hash']}</code></div>
+                        <div class="last-seen">Last seen: {last_seen_fmt} · commit <code style="color:#C6FF33;font-family:JetBrains Mono,monospace;font-size:11px;">{ghost['last_seen_hash']}</code></div>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -831,7 +919,7 @@ if st.session_state.get('analysis_complete', False):
         if not activity_data:
             st.markdown('<div class="empty-state"><div class="empty-icon">▦</div>Not enough commit data.</div>', unsafe_allow_html=True)
         else:
-            colorscale = [[0.0, '#F5EDE8'], [0.25, '#F8DEC7'], [0.5, '#EFA3A0'], [0.75, '#D4827E'], [1.0, '#493129']]
+            colorscale = [[0.0, '#000000'], [0.25, 'rgba(198,255,51,0.15)'], [0.5, 'rgba(198,255,51,0.4)'], [0.75, '#C6FF33'], [1.0, '#C50022']]
             fig = go.Figure(data=go.Heatmap(
                 z=activity_data['grid_z'], x=activity_data['x_labels'], y=activity_data['y_labels'],
                 text=activity_data['grid_hover'], hoverinfo='text', colorscale=colorscale,
@@ -864,7 +952,7 @@ if st.session_state.get('analysis_complete', False):
             avg_drifts = [h['avg_drift'] for h in heat_data]
             max_drifts = [h['max_drift'] for h in heat_data]
             total_c_list = [h['total_commits'] for h in heat_data]
-            bar_colors = ['#C0504D' if d > 0.7 else '#B07030' if d > 0.3 else '#5C7A5C' for d in avg_drifts]
+            bar_colors = ['#C50022' if d > 0.7 else '#C6FF33' if d > 0.3 else 'rgba(255,255,255,0.3)' for d in avg_drifts]
             display_names = [f if len(f) < 50 else "..." + f[-47:] for f in file_names]
             hover_text = [f"<b>{f}</b><br>Avg: {a:.3f}<br>Max: {m:.3f}<br>Commits: {t}" for f, a, m, t in zip(file_names, avg_drifts, max_drifts, total_c_list)]
 
@@ -903,7 +991,7 @@ if st.session_state.get('analysis_complete', False):
             score = summary_data['health_score']
             verdict = summary_data['verdict']
             v_desc = summary_data['verdict_desc']
-            v_color = '#5C7A5C' if score >= 80 else '#B07030' if score >= 60 else '#C0504D'
+            v_color = '#C6FF33' if score >= 80 else '#FFFFFF' if score >= 60 else '#C50022'
 
             st.markdown(f"""
             <div style="text-align: center; padding: 30px 0 10px 0;">
@@ -911,7 +999,7 @@ if st.session_state.get('analysis_complete', False):
                     <span class="score" style="color: {v_color};">{score}</span>
                     <span class="label" style="color: {v_color};">{verdict}</span>
                 </div>
-                <p style="color: #8B597B; font-size: 14px; max-width: 500px; margin: 0 auto;">{v_desc}</p>
+                <p style="color: rgba(255,255,255,0.5); font-size: 14px; max-width: 500px; margin: 0 auto;">{v_desc}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -928,8 +1016,8 @@ if st.session_state.get('analysis_complete', False):
             st.markdown('<div class="section-heading" style="font-size:16px;">Insights</div>', unsafe_allow_html=True)
             ins_html = '<div class="card" style="padding:0;">'
             for j, insight in enumerate(summary_data['insights']):
-                bdr = 'border-bottom:1px solid #F0E4DF;' if j < len(summary_data['insights']) - 1 else ''
-                ins_html += f'<div style="padding:14px 24px;{bdr}color:#493129;font-size:14px;line-height:1.7;">▸ {insight}</div>'
+                bdr = 'border-bottom:1px solid rgba(198,255,51,0.05);' if j < len(summary_data['insights']) - 1 else ''
+                ins_html += f'<div style="padding:14px 24px;{bdr}color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;">▸ {insight}</div>'
             ins_html += '</div>'
             st.markdown(ins_html, unsafe_allow_html=True)
 
@@ -939,9 +1027,9 @@ if st.session_state.get('analysis_complete', False):
 # ═════════════════════════════════════════════════════════════
 st.markdown('<div id="how-it-works" style="height: 1px;"></div>', unsafe_allow_html=True)
 st.markdown("""
-<div style="padding: 60px 0 24px 0; border-top: 1px solid #D4B8B0;">
+<div style="padding: 60px 0 24px 0; border-top: 1px solid rgba(198,255,51,0.08);">
     <div class="section-label">How it works</div>
-    <h2 style="font-size: 32px; font-weight: 700; color: #493129; margin: 0 0 40px 0;">Four lenses on your codebase.</h2>
+    <h2 style="font-size: 32px; font-weight: 700; color: #FFFFFF; margin: 0 0 40px 0; font-family: 'Orbitron', sans-serif;">Four lenses on your <span style='color:#C6FF33;'>codebase.</span></h2>
 </div>
 """, unsafe_allow_html=True)
 
@@ -989,9 +1077,9 @@ with fc4:
 # ═════════════════════════════════════════════════════════════
 st.markdown('<div id="faq" style="height: 1px;"></div>', unsafe_allow_html=True)
 st.markdown("""
-<div style="padding: 60px 0 24px 0; border-top: 1px solid #D4B8B0;">
+<div style="padding: 60px 0 24px 0; border-top: 1px solid rgba(198,255,51,0.08);">
     <div class="section-label">FAQ</div>
-    <h2 style="font-size: 32px; font-weight: 700; color: #493129; margin: 0 0 32px 0;">Common questions.</h2>
+    <h2 style="font-size: 32px; font-weight: 700; color: #FFFFFF; margin: 0 0 32px 0; font-family: 'Orbitron', sans-serif;">Common <span style='color:#C6FF33;'>questions.</span></h2>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1022,7 +1110,7 @@ faq_items = [
 
 for q, a in faq_items:
     with st.expander(q, expanded=False):
-        st.markdown(f'<div style="color: #8B597B; font-size: 14px; line-height: 1.6;">{a}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.6;">{a}</div>', unsafe_allow_html=True)
 
 
 # ═════════════════════════════════════════════════════════════
@@ -1032,13 +1120,15 @@ st.markdown("""
 <footer style="
     text-align: center;
     padding: 32px 0;
-    border-top: 1px solid #D4B8B0;
-    color: #B09090;
+    border-top: 1px solid rgba(198,255,51,0.08);
+    color: rgba(255,255,255,0.35);
     font-size: 13px;
     margin-top: 40px;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
 ">
-    Built with <a href="https://github.com/endee-io/endee" style="color: #8B597B; text-decoration: none; font-weight: 500;">Endee Vector Database</a>
+    Built with <a href="https://github.com/endee-io/endee" style="color: #C6FF33; text-decoration: none; font-weight: 600;">Endee Vector Database</a>
     &nbsp;·&nbsp; Powered by CodeBERT
-    &nbsp;·&nbsp; CoreDump
+    &nbsp;·&nbsp; <span style="color: #C50022;">CoreDump</span>
 </footer>
 """, unsafe_allow_html=True)
