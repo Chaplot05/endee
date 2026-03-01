@@ -29,6 +29,9 @@ def embed_batch(codes: list, progress_callback=None) -> list:
     This avoids loading torch inside Streamlit's script runner,
     which crashes on Windows due to DLL initialization issues.
 
+    For large payloads (>1MB), data is passed via a temp file to avoid
+    Windows pipe buffer deadlocks that cause [Errno 32] Broken pipe.
+
     Args:
         codes: List of source code strings
         progress_callback: Optional callable(current, total)
@@ -36,48 +39,103 @@ def embed_batch(codes: list, progress_callback=None) -> list:
     Returns:
         list[list[float]]: 384-dim embedding vectors
     """
-    input_data = json.dumps({"codes": codes})
-
-    proc = subprocess.Popen(
-        [sys.executable, _WORKER_PATH],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        cwd=os.path.dirname(os.path.abspath(__file__))
-    )
-
-    proc.stdin.write(input_data)
-    proc.stdin.close()
-
     import threading
-    stderr_lines = []
+    import tempfile
 
-    def read_stderr():
-        for line in proc.stderr:
-            line = line.strip()
-            stderr_lines.append(line)
-            if line.startswith("PROGRESS:") and progress_callback:
-                try:
-                    parts = line.replace("PROGRESS:", "").split("/")
-                    progress_callback(int(parts[0]), int(parts[1]))
-                except Exception:
-                    pass
+    input_data = json.dumps({"codes": codes})
+    use_tempfile = len(input_data) > 1_000_000  # >1MB → use temp file
 
-    stderr_thread = threading.Thread(target=read_stderr, daemon=True)
-    stderr_thread.start()
-
-    stdout_data = proc.stdout.read()
-    proc.wait()
-    stderr_thread.join(timeout=5)
-
-    if proc.returncode != 0:
-        error_msg = "\n".join(stderr_lines[-10:])
-        raise RuntimeError(f"Embedding worker failed (exit code {proc.returncode}):\n{error_msg}")
-
+    tmp_path = None
     try:
-        embeddings = json.loads(stdout_data)
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Failed to parse embeddings output: {e}\nStderr: {chr(10).join(stderr_lines[-5:])}")
+        if use_tempfile:
+            # Write input to a temp file to sidestep pipe buffer limits
+            fd, tmp_path = tempfile.mkstemp(suffix=".json", prefix="coredump_embed_")
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                f.write(input_data)
 
-    return embeddings
+            proc = subprocess.Popen(
+                [sys.executable, _WORKER_PATH, "--input-file", tmp_path],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+        else:
+            proc = subprocess.Popen(
+                [sys.executable, _WORKER_PATH],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+
+            # Write stdin in a background thread to avoid deadlock.
+            # On Windows, pipe buffers are small (~4KB). If the parent writes
+            # a large payload synchronously while the child hasn't started
+            # reading, the parent blocks on write — classic pipe deadlock
+            # that surfaces as [Errno 32] Broken pipe.
+            stdin_error = [None]
+
+            def write_stdin():
+                try:
+                    proc.stdin.write(input_data)
+                    proc.stdin.close()
+                except Exception as e:
+                    stdin_error[0] = e
+                    try:
+                        proc.stdin.close()
+                    except Exception:
+                        pass
+
+            stdin_thread = threading.Thread(target=write_stdin, daemon=True)
+            stdin_thread.start()
+
+        stderr_lines = []
+
+        def read_stderr():
+            for line in proc.stderr:
+                line = line.strip()
+                stderr_lines.append(line)
+                if line.startswith("PROGRESS:") and progress_callback:
+                    try:
+                        parts = line.replace("PROGRESS:", "").split("/")
+                        progress_callback(int(parts[0]), int(parts[1]))
+                    except Exception:
+                        pass
+
+        stderr_thread = threading.Thread(target=read_stderr, daemon=True)
+        stderr_thread.start()
+
+        stdout_data = proc.stdout.read()
+        proc.wait()
+        if not use_tempfile:
+            stdin_thread.join(timeout=30)
+        stderr_thread.join(timeout=5)
+
+        # Check for stdin write failure (pipe-based mode only)
+        if not use_tempfile and stdin_error[0] is not None:
+            error_msg = "\n".join(stderr_lines[-10:]) if stderr_lines else str(stdin_error[0])
+            raise RuntimeError(
+                f"Embedding worker crashed before reading input:\n{error_msg}"
+            )
+
+        if proc.returncode != 0:
+            error_msg = "\n".join(stderr_lines[-10:])
+            raise RuntimeError(f"Embedding worker failed (exit code {proc.returncode}):\n{error_msg}")
+
+        try:
+            embeddings = json.loads(stdout_data)
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Failed to parse embeddings output: {e}\nStderr: {chr(10).join(stderr_lines[-5:])}")
+
+        return embeddings
+
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+

@@ -8,14 +8,25 @@ import json
 import numpy as np
 
 def main():
-    """Read codes from stdin (JSON), compute embeddings, write to stdout (JSON)."""
+    """Read codes from stdin or file (JSON), compute embeddings, write to stdout (JSON)."""
     import os
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     from sentence_transformers import SentenceTransformer
 
-    # Read input
-    input_data = json.loads(sys.stdin.read())
+    # Read input — either from a file (for large payloads) or stdin
+    input_file = None
+    if "--input-file" in sys.argv:
+        idx = sys.argv.index("--input-file")
+        if idx + 1 < len(sys.argv):
+            input_file = sys.argv[idx + 1]
+
+    if input_file:
+        with open(input_file, 'r', encoding='utf-8') as f:
+            input_data = json.load(f)
+    else:
+        input_data = json.loads(sys.stdin.read())
+
     codes = input_data['codes']
 
     # Load model
@@ -38,3 +49,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

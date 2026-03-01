@@ -7,5 +7,6 @@ scikit-learn>=1.4.0
 umap-learn>=0.5.6
 python-dotenv>=1.0.0
 requests>=2.31.0
+sentence-transformers>=3.0.0
 transformers>=4.38.0
 tokenizers>=0.15.0
